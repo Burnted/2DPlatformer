@@ -4,12 +4,10 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.JPanel
 import javax.swing.Timer
-import kotlin.math.pow
 
 class GamePanel : JPanel(), ActionListener, KeyListener {
     private val width = 500
@@ -87,7 +85,6 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
             }
         }
     }
-
     override fun keyReleased(e: KeyEvent?) {
 
     }
