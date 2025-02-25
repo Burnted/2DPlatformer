@@ -2,7 +2,9 @@ import javax.swing.JFrame
 
 class Window: JFrame() {
     init {
-        this.add(GamePanel())
+        val gamePanel = GamePanel()
+        this.add(gamePanel)
+        this.addKeyListener(gamePanel)
 
         this.title = "Game"
         this.defaultCloseOperation = EXIT_ON_CLOSE

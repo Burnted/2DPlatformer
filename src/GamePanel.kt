@@ -4,26 +4,31 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.JPanel
 import javax.swing.Timer
+import kotlin.math.pow
 
-class GamePanel: JPanel(), ActionListener {
+class GamePanel : JPanel(), ActionListener, KeyListener {
     private val width = 500
     private val height = 1000
 
-    var gravity = 1 // m/s^2
-    var timeElapsed = 0.0 // in s
-    var velocity = 0.0 // m/s
+    private val gravity = 1 // m/s^2
+    private var timeElapsed = 0.0 // in s
+    private var fallTime = 0.0
+    private var velocity = 0.0 // m/s
 
-    var squareX = 250
-    var squareY = 0
+    private var squareX = 250
+    private var squareY = 700
 
-    var squareW = 50
-    var squareH = 50
+    private var squareW = 50
+    private var squareH = 50
 
-    var myY =0
+    private var newY = squareY
 
-    val timer = Timer(8, this)
+    val timer = Timer(17, this)
 
     init {
         this.preferredSize = Dimension(width, height)
@@ -38,35 +43,52 @@ class GamePanel: JPanel(), ActionListener {
         g2d.fillRect(squareX, squareY, squareW, squareH)
     }
 
-    private fun fall(y:Int) {
+    private fun fall(y: Int) {
         squareY = y
-//        if (squareY >= height-squareH) {
-//            squareY = height-squareH
-//        }else{
-//
-//        }
-
         repaint()
+    }
+
+    private fun checkFloorCollision(y: Int): Boolean {
+        return y >= height-squareH
     }
 
     override fun actionPerformed(e: ActionEvent?) {
 
+        fall(newY)
+        var isFalling = true
 
-        fall(myY)
-        if (myY >= height-squareH ){
-            velocity = -10.0
-            myY = height-2*squareH
+        if (checkFloorCollision(newY)) {
 
+            newY=height-squareH
+            isFalling = false
 
         }
-        else{
-            myY = (velocity * timeElapsed + myY).toInt()
-            velocity += gravity * timeElapsed
-            timeElapsed += timer.delay.toDouble()/1000
-            println(velocity)
+
+        if (isFalling) {
+            newY = (newY+velocity).toInt()
+            velocity += gravity
+
         }
 
 
     }
 
+
+    override fun keyTyped(e: KeyEvent?) {
+
+    }
+
+    override fun keyPressed(e: KeyEvent?) {
+        //println("someting happened")
+        if (e != null) {
+            if (e.keyCode == KeyEvent.VK_SPACE) {
+                velocity = -20.0
+                newY -= 5
+            }
+        }
+    }
+
+    override fun keyReleased(e: KeyEvent?) {
+
+    }
 }
