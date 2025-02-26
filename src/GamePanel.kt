@@ -28,7 +28,7 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
 
     private var newY = squareY
 
-    val timer = Timer(17, this)
+    private val timer = Timer(17, this)
 
     init {
         this.preferredSize = Dimension(width, height)
