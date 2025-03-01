@@ -1,3 +1,4 @@
+import sprites.CollisionObject
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
@@ -9,21 +10,34 @@ import java.awt.*
 
 class GamePanel : JPanel(), ActionListener, KeyListener {
 
-
-
-    private var squareX = 0
-    private var squareY = 5
-
     companion object {
         const val TILE_SIZE = 50
         const val WIDTH = 1500
         const val HEIGHT = 300
     }
 
+    private var playerX = 120
+    private var playerY = 5
+
+    private var collisionObjX = 200
+    private var collisionObjY = 220
+
+    private var collisionObjX2 = 300
+    private var collisionObjY2 = 320
+
+    private var collisionObjLeft = intArrayOf(collisionObjX- TILE_SIZE, collisionObjX2- TILE_SIZE)
+    private var collisionObjRight = intArrayOf(collisionObjX+ TILE_SIZE, collisionObjX2+ TILE_SIZE)
+    private var collisionObjTop = intArrayOf(collisionObjY,collisionObjY2)
+
+
+
+
+
 
     private val timer = Timer(17, this)
 
-    private val player = Player(Point(squareX,squareY))
+    private val player = Player(Point(playerX,playerY))
+    private val floor = CollisionObject(Point(collisionObjX,collisionObjY), "testFloor.png")
 
     init {
         this.preferredSize = Dimension(WIDTH, HEIGHT)
@@ -34,28 +48,56 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         val g2d = g as Graphics2D
         super.paintComponent(g)
         player.render(g2d, this)
+        floor.render(g2d, this)
 
+    }
+
+    // this function works for the most part, it just only works for one block and
+    // I don't quite know how to check every object in the game
+    // maybe make a hitbox scalar that applies to the player pos and checks for intersections
+    // in a list of hitboxes for the other objects, the issue is idk how to do that.
+    private fun collision(pos: Point){
+
+        // instead of cheking if the player has collided with every object in the game,
+        // have each object run a check if it has collided with a player
+        // maybe implement a render distance sorta check in the actionPerformed function.
+        // but yea move this function into the CollisionObject class, requires less work.
+
+        if (collisionObjX > pos.x+TILE_SIZE || pos.x >= (collisionObjX + TILE_SIZE)){
+            return
+        }
+
+
+        if(pos.y >= collisionObjY-TILE_SIZE){
+            player.verticalVelocity = 0.0
+            player.horizontalVelocity = 0.0
+            //player.pos.y=collisionObjY-TILE_SIZE
+            return
+        }
+
+
+//
+//        if (collisionObjX <= pos.x+TILE_SIZE && pos.x <= collisionObjX){
+//            println("inside cube on left")
+//            player.horizontalVelocity = 0.0
+//            player.pos.x=collisionObjX-TILE_SIZE
+//            return
+//
+//        }
+//        if (pos.x <= (collisionObjX + TILE_SIZE) && collisionObjX+ TILE_SIZE <= pos.x+TILE_SIZE){
+//            println("inside cube on right")
+//            player.horizontalVelocity = 0.0
+//            player.pos.x=(collisionObjX + TILE_SIZE)
+//            return
+//        }
     }
 
 
     override fun actionPerformed(e: ActionEvent?) {
 
+        collision(player.pos)
         player.update()
         repaint()
-//        fall(newY)
-//        var isFalling = true
-//
-//        if (checkFloorCollision(newY)) {
-//            newY = HEIGHT - TILE_SIZE
-//            isFalling = false
-//
-//        }
-//
-//        if (isFalling) {
-//            newY = (newY+velocity).toInt()
-//            velocity += gravity
-//
-//        }
     }
 
 
@@ -64,20 +106,12 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
     }
 
     override fun keyPressed(e: KeyEvent?) {
-        //println("someting happened")
         if (e != null) {
             player.keyPressed(e)
-//            if (e.keyCode == KeyEvent.VK_SPACE && checkFloorCollision(player.pos.y)) {
-//                velocity = -20.0
-//                newY -= 5
-//            }
         }
     }
     override fun keyReleased(e: KeyEvent?) {
-        if (e != null) {
-
-            player.keyReleased(e)
-        }
+        player.keyReleased()
     }
 
 

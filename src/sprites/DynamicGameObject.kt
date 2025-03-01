@@ -6,7 +6,6 @@ import java.awt.Point
 import java.awt.image.BufferedImage
 import java.awt.image.ImageObserver
 import java.io.IOException
-import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.absoluteValue
 
@@ -21,7 +20,6 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
     private val gravity = 0.5
     private val frictionConstant = 0.2
     var isMoving = false
-    val startTimeNanos = System.currentTimeMillis()
 
 
     init {
@@ -32,6 +30,7 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
         return posY >= GamePanel.HEIGHT - GamePanel.TILE_SIZE
     }
 
+
     fun jump(strength: Double){
         if (checkYCollision(pos.y)){
             pos.y -=1
@@ -39,8 +38,8 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
         }
     }
 
-
     fun applyHorizontalPush(strength:Double) {
+        pos.x += 5*(strength.absoluteValue/strength).toInt()
         horizontalVelocity = strength
     }
 
