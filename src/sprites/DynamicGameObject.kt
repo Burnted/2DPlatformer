@@ -6,7 +6,9 @@ import java.awt.Point
 import java.awt.image.BufferedImage
 import java.awt.image.ImageObserver
 import java.io.IOException
+import java.util.*
 import javax.imageio.ImageIO
+import kotlin.math.absoluteValue
 
 open class DynamicGameObject(var pos:Point, private val img: String) {
 
@@ -17,7 +19,9 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
     var verticalVelocity = 0.0
     var horizontalVelocity = 0.0
     private val gravity = 0.5
-    private val frictionConstant = 0.5
+    private val frictionConstant = 0.2
+    var isMoving = false
+    val startTimeNanos = System.currentTimeMillis()
 
 
     init {
@@ -35,37 +39,35 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
         }
     }
 
-    fun moveHorizontal(){
-
-    }
 
     fun applyHorizontalPush(strength:Double) {
-        horizontalVelocity += strength
+        horizontalVelocity = strength
     }
 
     protected fun applyFriction() {
+        if (isMoving){
+            return
+        }
         if (!checkYCollision(pos.y)){
             return
         }
+
         if (horizontalVelocity in -frictionConstant/2..frictionConstant/2){
             return
         }
 
         if (horizontalVelocity > frictionConstant/2) {
-            pos.x = (pos.x + horizontalVelocity).toInt()
             horizontalVelocity -= frictionConstant
 
         }
         else if (horizontalVelocity < -frictionConstant/2){
-            pos.x = (pos.x + horizontalVelocity).toInt()
             horizontalVelocity += frictionConstant
         }
-        println("pos: ${pos.x},${pos.y}")
-        println("velocityH: $horizontalVelocity")
     }
 
     // gravity controlled motion, is always checked
     protected fun calcProjectileMotion() {
+        pos.x += horizontalVelocity.toInt()
         if(checkYCollision(pos.y)) {
             verticalVelocity = 0.0
             pos.y = GamePanel.HEIGHT - GamePanel.TILE_SIZE
@@ -73,7 +75,7 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
             return
         }
         pos.y = (pos.y+verticalVelocity).toInt()
-        pos.x += horizontalVelocity.toInt()
+
         verticalVelocity += gravity
     }
 

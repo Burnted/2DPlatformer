@@ -30,9 +30,21 @@ class Player(startPos:Point) : DynamicGameObject(startPos, "testImg.png") {
     fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
             KeyEvent.VK_SPACE -> jump(10.0)
-            KeyEvent.VK_RIGHT -> applyHorizontalPush(10.0)
-            KeyEvent.VK_LEFT -> applyHorizontalPush(-10.0)
+            KeyEvent.VK_RIGHT -> {
+                this.isMoving = true
+                applyHorizontalPush(5.0)
+
+            }
+            KeyEvent.VK_LEFT -> {
+                this.isMoving = true
+                applyHorizontalPush(-5.0)
+
+            }
         }
+    }
+
+    fun keyReleased(e: KeyEvent) {
+        this.isMoving = false
     }
 
 

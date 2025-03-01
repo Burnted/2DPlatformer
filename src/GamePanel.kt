@@ -16,8 +16,8 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
 
     companion object {
         const val TILE_SIZE = 50
-        const val WIDTH = 800
-        const val HEIGHT = 100
+        const val WIDTH = 1500
+        const val HEIGHT = 300
     }
 
 
@@ -74,7 +74,10 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         }
     }
     override fun keyReleased(e: KeyEvent?) {
+        if (e != null) {
 
+            player.keyReleased(e)
+        }
     }
 
 
