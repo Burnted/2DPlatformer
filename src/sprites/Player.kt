@@ -9,19 +9,23 @@ import java.awt.event.KeyEvent
 
 class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
 
+
+
     fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
             KeyEvent.VK_SPACE -> jump(10.0)
             KeyEvent.VK_UP -> jump(15.0)
             KeyEvent.VK_RIGHT -> {
+
+                applyHorizontalPush(1.0)
                 this.isMoving = true
-                applyHorizontalPush(5.0)
 
             }
 
             KeyEvent.VK_LEFT -> {
+
+                applyHorizontalPush(-1.0)
                 this.isMoving = true
-                applyHorizontalPush(-5.0)
 
             }
         }
@@ -40,6 +44,7 @@ class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
     fun update() {
         this.applyFriction()
         this.calcProjectileMotion()
+        hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
     }
 
 

@@ -1,5 +1,6 @@
 package sprites
 
+import GamePanel
 import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.image.BufferedImage
@@ -10,6 +11,8 @@ import javax.imageio.ImageIO
 class CollisionObject(var pos: Point, private val img: String) {
     private var image: BufferedImage? = null
     private val tileSize = GamePanel.TILE_SIZE
+
+    var hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
 
     init {
         getBufferedImageFromStream()

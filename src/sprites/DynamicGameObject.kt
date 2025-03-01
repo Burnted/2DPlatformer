@@ -13,12 +13,13 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
 
     private var image:BufferedImage? = null
     private val tileSize = GamePanel.TILE_SIZE
+    var hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
 
 
     var verticalVelocity = 0.0
     var horizontalVelocity = 0.0
     private val gravity = 0.5
-    private val frictionConstant = 0.2
+    private val frictionConstant = 0.5
     var isMoving = false
 
 
@@ -39,7 +40,7 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
     }
 
     fun applyHorizontalPush(strength:Double) {
-        pos.x += 5*(strength.absoluteValue/strength).toInt()
+        pos.x += 10*(strength.absoluteValue/strength).toInt()
         horizontalVelocity = strength
     }
 

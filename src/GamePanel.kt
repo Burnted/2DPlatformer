@@ -16,7 +16,7 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         const val HEIGHT = 300
     }
 
-    private var playerX = 120
+    private var playerX = 300
     private var playerY = 5
 
     private var collisionObjX = 200
@@ -50,6 +50,28 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         player.render(g2d, this)
         floor.render(g2d, this)
 
+    }
+
+    // trying out a hitbox idea here, seems to work really well
+    // but I'm worried it slow down when scaled up
+
+    // ok so yea right now it works amazingly
+
+    // ok actually still don't know what side of the block it is on so it
+    // kinda just shoves it into the block
+    private fun collisionTest() {
+        if(!player.isMoving){
+            return
+        }
+
+        
+        for (x: Int in player.hitbox){
+            if (x in floor.hitbox){
+                player.horizontalVelocity = 0.0
+                player.pos.x = x
+                return
+            }
+        }
     }
 
     // this function works for the most part, it just only works for one block and
@@ -95,7 +117,8 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
 
     override fun actionPerformed(e: ActionEvent?) {
 
-        collision(player.pos)
+        //collision(player.pos)
+        collisionTest()
         player.update()
         repaint()
     }
