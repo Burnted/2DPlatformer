@@ -1,4 +1,6 @@
-import sprites.CollisionObject
+import sprites.DynamicGameObject
+import sprites.Enemy
+import sprites.GameObject
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
@@ -16,20 +18,24 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         const val HEIGHT = 300
     }
 
-    private var playerX = 100
-    private var playerY = 200
-
-    private val collisionObjX = 220
-    private var collisionObjY = 250
-
+    private val playerX = 220
+    private val playerY = 200
 
     private val timer = Timer(17, this)
 
-    private val player = Player(Point(playerX,playerY))
-    private val floor = CollisionObject(Point(collisionObjX,collisionObjY), "testFloor.png")
+    private val player = Player(Point(playerX, playerY))
+    private val enemy = Enemy(Point(400, 100))
+
+    private val dynamicObjects = arrayListOf(player, enemy)
+
+    private val floor1 = GameObject(Point(220, 250), "testFloor.png")
+    private val floor2 = GameObject(Point(400, 250), "testFloor.png")
+
+    private val collisionObjects = hashSetOf(floor1, floor2)
 
     init {
         this.preferredSize = Dimension(WIDTH, HEIGHT)
+        this.isDoubleBuffered = true
         timer.start()
     }
 
@@ -37,71 +43,88 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         val g2d = g as Graphics2D
         super.paintComponent(g)
 
-        player.render(g2d, this)
-        floor.render(g2d, this)
-    }
+        for (dynamicObject in dynamicObjects) {
+            dynamicObject.render(g2d, this)
+        }
 
-
-    private fun rectangleCollisionTest(){
-
-        if (player.bounds.intersects(floor.bounds)){
-
-            player.horizontalVelocity = 0.0
-            player.verticalVelocity = 0.0
-            player.pos.move(player.previousPosition.x, player.previousPosition.y)
+        for (collisionObject in collisionObjects) {
+            collisionObject.render(g2d, this)
         }
     }
 
-    // this function works for the most part, it just only works for one block and
-    // I don't quite know how to check every object in the game
-    // maybe make a hitbox scalar that applies to the player pos and checks for intersections
-    // in a list of hitboxes for the other objects, the issue is idk how to do that.
-    private fun collision(pos: Point){
 
-        // instead of cheking if the player has collided with every object in the game,
-        // have each object run a check if it has collided with a player
-        // maybe implement a render distance sorta check in the actionPerformed function.
-        // but yea move this function into the CollisionObject class, requires less work.
+    private fun checkXCollision(){
+        for (dynamicObject in dynamicObjects) {
+            val entityY = dynamicObject.pos.y
+            val entityBounds = dynamicObject.bounds
 
-        if (collisionObjX > pos.x+TILE_SIZE || pos.x >= (collisionObjX + TILE_SIZE)){
-            return
+            for (collisionObject in collisionObjects) {
+
+                if (collisionObject.pos.y !in entityY..entityY+ TILE_SIZE) continue
+                val objBounds = collisionObject.bounds
+
+
+                if (!entityBounds.intersects(objBounds)) continue
+                if (entityY + TILE_SIZE <= objBounds.centerY) continue
+                dynamicObject.horizontalVelocity = 0.0
+                dynamicObject.pos.x = dynamicObject.previousPosition.x
+            }
         }
-
-
-        if(pos.y >= collisionObjY-TILE_SIZE){
-            player.verticalVelocity = 0.0
-            player.horizontalVelocity = 0.0
-            //player.pos.y=collisionObjY-TILE_SIZE
-            return
-        }
-
-
-//
-//        if (collisionObjX <= pos.x+TILE_SIZE && pos.x <= collisionObjX){
-//            println("inside cube on left")
-//            player.horizontalVelocity = 0.0
-//            player.pos.x=collisionObjX-TILE_SIZE
-//            return
-//
-//        }
-//        if (pos.x <= (collisionObjX + TILE_SIZE) && collisionObjX+ TILE_SIZE <= pos.x+TILE_SIZE){
-//            println("inside cube on right")
-//            player.horizontalVelocity = 0.0
-//            player.pos.x=(collisionObjX + TILE_SIZE)
-//            return
-//        }
     }
+
+    private fun checkYCollision() {
+        for(dynamicObject in dynamicObjects) {
+            dynamicObject.isOnGround = false
+            val entityY = dynamicObject.pos.y
+
+            if (entityY >= HEIGHT - TILE_SIZE) {
+                dynamicObject.isOnGround = true
+                dynamicObject.verticalVelocity = 0.0
+                dynamicObject.pos.y = HEIGHT - TILE_SIZE
+                continue
+            }
+
+            val entityBounds = dynamicObject.bounds
+
+            for (collisionObject in collisionObjects) {
+                val objBounds = collisionObject.bounds
+                if (!entityBounds.intersects(objBounds)) continue
+
+                if (entityY + TILE_SIZE <= objBounds.centerY) {
+                    dynamicObject.isOnGround = true
+                    dynamicObject.verticalVelocity = 0.0
+                    dynamicObject.pos.y = collisionObject.pos.y - TILE_SIZE + 1
+                    break
+                }
+            }
+        }
+    }
+
+    // Ticks per second (or any rate you prefer)
+    private val ticksPerSecond = 60
+    private val nsPerTick = 1000000000L / ticksPerSecond
+    private var lastTime = System.nanoTime()
+    private var delta = 0.0
 
     override fun actionPerformed(e: ActionEvent?) {
+        val now = System.nanoTime()
+        delta += (now - lastTime) / nsPerTick
+        lastTime = now
 
-        //collision(player.pos)
+        while (delta >= 1) {
+            // Update game state for physics logic
+            player.update()
+            enemy.update()
 
-        player.update()
-        rectangleCollisionTest()
+            // Handle collisions and movement
+            checkYCollision()
+            checkXCollision()
+            delta -= 1
+        }
 
-        repaint()
-
+        repaint()  // Render the game
     }
+
 
 
     override fun keyTyped(e: KeyEvent?) {
@@ -113,6 +136,7 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
             player.keyPressed(e)
         }
     }
+
     override fun keyReleased(e: KeyEvent?) {
         player.keyReleased()
     }

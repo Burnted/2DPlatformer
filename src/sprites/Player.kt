@@ -14,14 +14,14 @@ class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
             KeyEvent.VK_UP -> jump(15.0)
             KeyEvent.VK_RIGHT -> {
 
-                applyHorizontalPush(5.0)
+                applyHorizontalPush(2.0)
                 this.isMoving = true
 
             }
 
             KeyEvent.VK_LEFT -> {
 
-                applyHorizontalPush(-5.0)
+                applyHorizontalPush(-2.0)
                 this.isMoving = true
 
             }
@@ -39,13 +39,10 @@ class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
 
 
     fun update() {
-
         this.applyFriction()
         this.calcProjectileMotion()
         this.bounds.x = this.pos.x
         this.bounds.y = this.pos.y
-
-
     }
 
 
