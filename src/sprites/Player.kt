@@ -8,23 +8,20 @@ import java.awt.event.KeyEvent
 // was watching sorting algorithm videos while doing this
 
 class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
-
-
-
     fun keyPressed(e: KeyEvent) {
         when (e.keyCode) {
             KeyEvent.VK_SPACE -> jump(10.0)
             KeyEvent.VK_UP -> jump(15.0)
             KeyEvent.VK_RIGHT -> {
 
-                applyHorizontalPush(1.0)
+                applyHorizontalPush(5.0)
                 this.isMoving = true
 
             }
 
             KeyEvent.VK_LEFT -> {
 
-                applyHorizontalPush(-1.0)
+                applyHorizontalPush(-5.0)
                 this.isMoving = true
 
             }
@@ -42,9 +39,13 @@ class Player(startPos: Point) : DynamicGameObject(startPos, "testImg.png") {
 
 
     fun update() {
+
         this.applyFriction()
         this.calcProjectileMotion()
-        hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
+        this.bounds.x = this.pos.x
+        this.bounds.y = this.pos.y
+
+
     }
 
 

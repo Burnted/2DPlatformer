@@ -1,23 +1,28 @@
 package sprites
 
 import GamePanel
+import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.awt.image.ImageObserver
 import java.io.IOException
 import javax.imageio.ImageIO
 
+/*
+ Intended to be walls and floors, they cannot move and are not affected by gravity
+ */
+
 class CollisionObject(var pos: Point, private val img: String) {
     private var image: BufferedImage? = null
     private val tileSize = GamePanel.TILE_SIZE
 
-    var hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
+    var bounds = Rectangle(pos.x,pos.y,tileSize,tileSize)
 
     init {
         getBufferedImageFromStream()
     }
-
 
     fun render(g2d: Graphics2D, observer: ImageObserver) {
         g2d.drawImage(image, pos.x, pos.y,tileSize,tileSize, observer)

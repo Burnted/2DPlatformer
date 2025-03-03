@@ -8,7 +8,7 @@ class Window: JFrame() {
 
         this.title = "Game"
         this.defaultCloseOperation = EXIT_ON_CLOSE
-        this.isResizable = true
+        this.isResizable = false
         this.isAlwaysOnTop = true
         this.pack()
         this.setLocationRelativeTo(null)

@@ -16,22 +16,11 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
         const val HEIGHT = 300
     }
 
-    private var playerX = 300
-    private var playerY = 5
+    private var playerX = 100
+    private var playerY = 200
 
-    private var collisionObjX = 200
-    private var collisionObjY = 220
-
-    private var collisionObjX2 = 300
-    private var collisionObjY2 = 320
-
-    private var collisionObjLeft = intArrayOf(collisionObjX- TILE_SIZE, collisionObjX2- TILE_SIZE)
-    private var collisionObjRight = intArrayOf(collisionObjX+ TILE_SIZE, collisionObjX2+ TILE_SIZE)
-    private var collisionObjTop = intArrayOf(collisionObjY,collisionObjY2)
-
-
-
-
+    private val collisionObjX = 220
+    private var collisionObjY = 250
 
 
     private val timer = Timer(17, this)
@@ -47,30 +36,19 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
     override fun paintComponent(g: Graphics?) {
         val g2d = g as Graphics2D
         super.paintComponent(g)
+
         player.render(g2d, this)
         floor.render(g2d, this)
-
     }
 
-    // trying out a hitbox idea here, seems to work really well
-    // but I'm worried it slow down when scaled up
 
-    // ok so yea right now it works amazingly
+    private fun rectangleCollisionTest(){
 
-    // ok actually still don't know what side of the block it is on so it
-    // kinda just shoves it into the block
-    private fun collisionTest() {
-        if(!player.isMoving){
-            return
-        }
+        if (player.bounds.intersects(floor.bounds)){
 
-        
-        for (x: Int in player.hitbox){
-            if (x in floor.hitbox){
-                player.horizontalVelocity = 0.0
-                player.pos.x = x
-                return
-            }
+            player.horizontalVelocity = 0.0
+            player.verticalVelocity = 0.0
+            player.pos.move(player.previousPosition.x, player.previousPosition.y)
         }
     }
 
@@ -114,13 +92,15 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
 //        }
     }
 
-
     override fun actionPerformed(e: ActionEvent?) {
 
         //collision(player.pos)
-        collisionTest()
+
         player.update()
+        rectangleCollisionTest()
+
         repaint()
+
     }
 
 

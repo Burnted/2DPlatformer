@@ -3,25 +3,30 @@ package sprites
 import GamePanel
 import java.awt.Graphics2D
 import java.awt.Point
+import java.awt.Rectangle
 import java.awt.image.BufferedImage
 import java.awt.image.ImageObserver
 import java.io.IOException
 import javax.imageio.ImageIO
 import kotlin.math.absoluteValue
 
+/*
+These objects can move and are affected by gravity
+ */
+
 open class DynamicGameObject(var pos:Point, private val img: String) {
+    private val gravity = 0.5
+    private val frictionConstant = 0.5
+    var verticalVelocity = 0.0
+    var horizontalVelocity = 0.0
+    var isMoving = false
+    var previousPosition = Point(pos.x, pos.y)
+
 
     private var image:BufferedImage? = null
     private val tileSize = GamePanel.TILE_SIZE
-    var hitbox = pos.x..pos.x+GamePanel.TILE_SIZE
 
-
-    var verticalVelocity = 0.0
-    var horizontalVelocity = 0.0
-    private val gravity = 0.5
-    private val frictionConstant = 0.5
-    var isMoving = false
-
+    var bounds = Rectangle(pos.x,pos.y,tileSize,tileSize)
 
     init {
         getBufferedImageFromStream()
@@ -40,7 +45,7 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
     }
 
     fun applyHorizontalPush(strength:Double) {
-        pos.x += 10*(strength.absoluteValue/strength).toInt()
+        pos.x += (0.01*strength.absoluteValue/strength).toInt()
         horizontalVelocity = strength
     }
 
@@ -67,6 +72,8 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
 
     // gravity controlled motion, is always checked
     protected fun calcProjectileMotion() {
+        previousPosition.move(pos.x, pos.y)
+
         pos.x += horizontalVelocity.toInt()
         if(checkYCollision(pos.y)) {
             verticalVelocity = 0.0
@@ -74,6 +81,7 @@ open class DynamicGameObject(var pos:Point, private val img: String) {
 
             return
         }
+
         pos.y = (pos.y+verticalVelocity).toInt()
 
         verticalVelocity += gravity
