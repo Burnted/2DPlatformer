@@ -1,128 +1,102 @@
-import sprites.DynamicGameObject
-import sprites.Enemy
-import sprites.GameObject
+import physics.PhysicsEngine
+import sprites.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import javax.swing.JPanel
 import javax.swing.Timer
-import sprites.Player
 import java.awt.*
+import kotlin.math.roundToInt
 
-class GamePanel : JPanel(), ActionListener, KeyListener {
+class GamePanel : JPanel(), KeyListener, Runnable {
 
     companion object {
         const val TILE_SIZE = 50
         const val WIDTH = 1500
-        const val HEIGHT = 300
+        const val HEIGHT = 400
+        private const val TPS = 30
+        const val TIME_PER_TICK = 1_000_000_000L / TPS // Nanoseconds per tick
     }
 
-    private val playerX = 220
-    private val playerY = 200
+    private var isRunning = false
+    private var thread: Thread? = null
+    private var fps = 0
 
-    private val timer = Timer(17, this)
+    private var alpha = 1.0
 
-    private val player = Player(Point(playerX, playerY))
-    private val enemy = Enemy(Point(400, 100))
+    private val player = Player(100, 200)
+    private val enemy = Enemy(400,100)
 
     private val dynamicObjects = arrayListOf(player, enemy)
 
-    private val floor1 = GameObject(Point(220, 250), "testFloor.png")
-    private val floor2 = GameObject(Point(400, 250), "testFloor.png")
+    private val floor1 = WorldObject(1.0f , 220,250, "testFloor.png")
+    private val floor2 = WorldObject(0.5f, 400, 250, "testFloor.png")
 
-    private val collisionObjects = hashSetOf(floor1, floor2)
+    private val collisionObjects = arrayListOf(floor1, floor2)
+
+    private val physicsEngine = PhysicsEngine(collisionObjects)
 
     init {
         this.preferredSize = Dimension(WIDTH, HEIGHT)
-        this.isDoubleBuffered = true
-        timer.start()
+        start()
+    }
+
+    private fun start(){
+        isRunning = true
+        thread = Thread(this)
+        thread!!.start()
+    }
+
+    private fun stop(){
+        isRunning = false
+        thread?.join()
+    }
+
+    override fun run() {
+        var lastTime = System.nanoTime()
+        var frames = 0
+        var timer = System.currentTimeMillis()
+        var deltaTime = 0.0
+
+        while (isRunning) {
+            val now = System.nanoTime()
+            val elapsed = now - lastTime
+            deltaTime += elapsed/TIME_PER_TICK.toDouble()
+            lastTime = now
+
+            if (deltaTime >= 1) {
+                updateGame(deltaTime/60)
+                deltaTime --
+            }
+
+            alpha = deltaTime
+
+            repaint()
+            frames++
+
+            if (System.currentTimeMillis() - timer >= 1000) {
+                fps = frames
+                frames = 0
+                timer += 1000
+            }
+
+            Thread.sleep(1)  // Prevent CPU overuse
+        }
+    }
+
+    private fun updateGame(deltaTime: Double) {
+        player.update(deltaTime)
+        physicsEngine.update(player, deltaTime)  // Apply physics with delta time
     }
 
     override fun paintComponent(g: Graphics?) {
         val g2d = g as Graphics2D
         super.paintComponent(g)
 
-        for (dynamicObject in dynamicObjects) {
-            dynamicObject.render(g2d, this)
-        }
-
-        for (collisionObject in collisionObjects) {
-            collisionObject.render(g2d, this)
-        }
-    }
-
-
-    private fun checkXCollision(){
-        for (dynamicObject in dynamicObjects) {
-            val entityY = dynamicObject.pos.y
-            val entityBounds = dynamicObject.bounds
-
-            for (collisionObject in collisionObjects) {
-
-                if (collisionObject.pos.y !in entityY..entityY+ TILE_SIZE) continue
-                val objBounds = collisionObject.bounds
-
-
-                if (!entityBounds.intersects(objBounds)) continue
-                if (entityY + TILE_SIZE <= objBounds.centerY) continue
-                dynamicObject.horizontalVelocity = 0.0
-                dynamicObject.pos.x = dynamicObject.previousPosition.x
-            }
-        }
-    }
-
-    private fun checkYCollision() {
-        for(dynamicObject in dynamicObjects) {
-            dynamicObject.isOnGround = false
-            val entityY = dynamicObject.pos.y
-
-            if (entityY >= HEIGHT - TILE_SIZE) {
-                dynamicObject.isOnGround = true
-                dynamicObject.verticalVelocity = 0.0
-                dynamicObject.pos.y = HEIGHT - TILE_SIZE
-                continue
-            }
-
-            val entityBounds = dynamicObject.bounds
-
-            for (collisionObject in collisionObjects) {
-                val objBounds = collisionObject.bounds
-                if (!entityBounds.intersects(objBounds)) continue
-
-                if (entityY + TILE_SIZE <= objBounds.centerY) {
-                    dynamicObject.isOnGround = true
-                    dynamicObject.verticalVelocity = 0.0
-                    dynamicObject.pos.y = collisionObject.pos.y - TILE_SIZE + 1
-                    break
-                }
-            }
-        }
-    }
-
-    // Ticks per second (or any rate you prefer)
-    private val ticksPerSecond = 60
-    private val nsPerTick = 1000000000L / ticksPerSecond
-    private var lastTime = System.nanoTime()
-    private var delta = 0.0
-
-    override fun actionPerformed(e: ActionEvent?) {
-        val now = System.nanoTime()
-        delta += (now - lastTime) / nsPerTick
-        lastTime = now
-
-        while (delta >= 1) {
-            // Update game state for physics logic
-            player.update()
-            enemy.update()
-
-            // Handle collisions and movement
-            checkYCollision()
-            checkXCollision()
-            delta -= 1
-        }
-
-        repaint()  // Render the game
+        player.render(g2d, (player.previousX + (player.x - player.previousX) * alpha).roundToInt(), (player.previousY + (player.y - player.previousY) * alpha).roundToInt(),this)
+        g2d.color = Color.BLACK
+        g2d.drawString("FPS: $fps",10,10)
     }
 
 
@@ -132,14 +106,22 @@ class GamePanel : JPanel(), ActionListener, KeyListener {
     }
 
     override fun keyPressed(e: KeyEvent?) {
-        if (e != null) {
-            player.keyPressed(e)
+        if (e == null) {
+            return
+        }
+
+        player.isMoving = true
+
+        when(e.keyCode) {
+            KeyEvent.VK_UP -> player.jump()
+            KeyEvent.VK_SPACE -> player.jump()
+            KeyEvent.VK_RIGHT -> player.horizontalVelocity = 300.0
+            KeyEvent.VK_LEFT -> player.horizontalVelocity = -300.0
         }
     }
 
     override fun keyReleased(e: KeyEvent?) {
-        player.keyReleased()
+        player.isMoving = false
     }
-
 
 }

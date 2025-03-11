@@ -1,5 +1,6 @@
 package sprites
 
+import GamePanel
 import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.Rectangle
@@ -8,19 +9,17 @@ import java.awt.image.ImageObserver
 import java.io.IOException
 import javax.imageio.ImageIO
 
-open class GameObject(var pos: Point, private val img: String) {
+abstract class GameObject(var x: Int, var y: Int, private val img: String) {
     private var image: BufferedImage? = null
     private val tileSize = GamePanel.TILE_SIZE
 
-    var bounds = Rectangle(pos.x,pos.y,tileSize,tileSize)
+    var bounds = Rectangle(x, y, tileSize, tileSize)
 
     init {
         getBufferedImageFromStream()
     }
 
-    fun render(g2d: Graphics2D, observer: ImageObserver) {
-        g2d.drawImage(image, pos.x, pos.y,tileSize,tileSize, observer)
-    }
+    abstract fun render(g2d: Graphics2D, renderX:Int, renderY:Int, observer: ImageObserver,)
 
     private fun getBufferedImageFromStream() {
         val classLoader = javaClass.classLoader
