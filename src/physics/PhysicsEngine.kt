@@ -11,8 +11,11 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
 
     // This method handles physics updates for all dynamic objects in the game
     fun update(entity: DynamicGameObject, deltaTime: Double) {
-        applyGravity(entity,deltaTime)
-        applyFriction(entity, deltaTime)
+        //for (entity in entities) {
+            applyGravity(entity,deltaTime)
+            applyFriction(entity, deltaTime)
+        handleCollision(entity, deltaTime)
+        //}
 
     }
 
@@ -30,7 +33,7 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
         }
 
         if (horizontalVelocity > frictionCoeff / 2) {
-            println(entity.horizontalVelocity)
+            //println(entity.horizontalVelocity)
             entity.horizontalVelocity -= acceleration * deltaTime
 
         } else if (horizontalVelocity < -frictionCoeff / 2) {
@@ -38,24 +41,17 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
         }
     }
 
-    private fun checkXCollision(entity: DynamicGameObject, deltaTime: Double) {
-
-
-            val entityY = entity.y
+    private fun handleCollision(entity: DynamicGameObject, deltaTime: Double) {
+        for (worldObject in worldObjects) {
+            val worldObjBounds = worldObject.bounds
             val entityBounds = entity.bounds
+            if (!worldObjBounds.intersects(entity.collisionCheckBounds)) continue
 
-            for (collisionObject in worldObjects) {
-
-                if (collisionObject.y !in entityY..entityY+ tileSize) continue
-                val objBounds = collisionObject.bounds
-
-
-                if (!entityBounds.intersects(objBounds)) continue
-                if (entityY + tileSize <= objBounds.centerY) continue
-                entity.horizontalVelocity = 0.0
-                //entity.x = entity.previousPosition.x
+            println("ready to collide")
+            if (worldObjBounds.intersects(entityBounds)) {
+                println("collided")
             }
-
+        }
     }
 
     private fun checkYCollision() {

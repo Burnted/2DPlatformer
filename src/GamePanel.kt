@@ -28,9 +28,9 @@ class GamePanel : JPanel(), KeyListener, Runnable {
     private val player = Player(100, 200)
     private val enemy = Enemy(400,100)
 
-    private val dynamicObjects = arrayListOf(player, enemy)
+    //private val dynamicObjects = arrayListOf(player, enemy)
 
-    private val floor1 = WorldObject(1.0f , 220,250, "testFloor.png")
+    private val floor1 = WorldObject(1.0f , 220,300, "testFloor.png")
     private val floor2 = WorldObject(0.5f, 400, 250, "testFloor.png")
 
     private val collisionObjects = arrayListOf(floor1, floor2)
@@ -95,11 +95,10 @@ class GamePanel : JPanel(), KeyListener, Runnable {
         super.paintComponent(g)
 
         player.render(g2d, (player.previousX + (player.x - player.previousX) * alpha).roundToInt(), (player.previousY + (player.y - player.previousY) * alpha).roundToInt(),this)
+        floor1.render(g2d, floor1.x, floor1.y,this)
         g2d.color = Color.BLACK
         g2d.drawString("FPS: $fps",10,10)
     }
-
-
 
     override fun keyTyped(e: KeyEvent?) {
 

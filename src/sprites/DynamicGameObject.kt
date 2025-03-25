@@ -24,6 +24,8 @@ open class DynamicGameObject(startX: Int, startY: Int, img: String) : GameObject
 
     var previousX = startX
     var previousY = startY
+    var collisionCheckBounds = Rectangle()
+
 
     open fun jump(){
         val jumpStrength = 600.0
@@ -47,11 +49,15 @@ open class DynamicGameObject(startX: Int, startY: Int, img: String) : GameObject
             verticalVelocity = 0.0
             isOnGround = true
         }
+        bounds.setLocation(x, y)
+        collisionCheckBounds.setFrameFromCenter(bounds.centerX, bounds.centerY,bounds.x-50.0, bounds.y-50.0)
     }
 
     override fun render(g2d: Graphics2D, renderX: Int, renderY: Int, observer: ImageObserver) {
         //g2d.drawImage(super.image, renderX, renderY, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE, observer)
         g2d.color= Color.BLUE
         g2d.fillRect(renderX, renderY, GamePanel.TILE_SIZE, GamePanel.TILE_SIZE)
+        g2d.color= Color.red
+        g2d.draw(collisionCheckBounds)
     }
 }
