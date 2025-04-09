@@ -3,6 +3,7 @@ package physics
 import GamePanel
 import sprites.DynamicGameObject
 import sprites.WorldObject
+import kotlin.math.roundToInt
 
 class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
     private val gravity = 2000.0 // -> px/s^2
@@ -14,13 +15,13 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
         //for (entity in entities) {
             applyGravity(entity,deltaTime)
             applyFriction(entity, deltaTime)
-        handleCollision(entity, deltaTime)
+            handleCollision(entity, deltaTime)
         //}
 
     }
 
     private fun applyFriction(entity: DynamicGameObject, deltaTime: Double) {
-        val frictionCoeff = 0.5f
+        val frictionCoeff = 1.5f
         if (entity.isMoving|| !entity.isOnGround) {
             return
         }
@@ -28,15 +29,14 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
         val acceleration = frictionCoeff * gravity
         val horizontalVelocity = entity.horizontalVelocity
 
-        if (horizontalVelocity in -frictionCoeff / 2..frictionCoeff / 2) {
+        if (horizontalVelocity in -10.0..10.0) {
             return
         }
 
-        if (horizontalVelocity > frictionCoeff / 2) {
-            //println(entity.horizontalVelocity)
+        if (horizontalVelocity > 10.0) {
             entity.horizontalVelocity -= acceleration * deltaTime
 
-        } else if (horizontalVelocity < -frictionCoeff / 2) {
+        } else if (horizontalVelocity < -10.0) {
             entity.horizontalVelocity += acceleration * deltaTime
         }
     }
@@ -46,15 +46,40 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
             val worldObjBounds = worldObject.bounds
             val entityBounds = entity.bounds
             if (!worldObjBounds.intersects(entity.collisionCheckBounds)) continue
+            if (!worldObjBounds.intersects(entityBounds)) continue
 
-            println("ready to collide")
-            if (worldObjBounds.intersects(entityBounds)) {
-                println("collided")
+            val entityY = entityBounds.centerY
+            val entityX = entityBounds.centerX
+            when(worldObjBounds.outcode(entityX,entityY)){
+                1 -> {
+                    //left
+                    entity.horizontalVelocity = 0.0
+                    entity.x = worldObjBounds.x-tileSize
+                }
+                4 -> {
+                    //right
+                    entity.horizontalVelocity = 0.0
+                    entity.x = worldObjBounds.x+tileSize
+                }
+                2 -> {
+                    // top
+                    entity.isOnGround = true
+                    entity.verticalVelocity = 0.0
+                    entity.y = worldObjBounds.y-tileSize
+
+                }
             }
+
+
         }
     }
 
-    private fun checkYCollision() {
+    private fun checkYCollision(){
+
+    }
+
+
+   // private fun checkYCollision() {
 //        for(entity in entitys) {
 //            entity.isOnGround = false
 //            val entityY = entity.y
@@ -80,7 +105,7 @@ class PhysicsEngine(private val worldObjects: ArrayList<WorldObject>) {
 //                }
 //            }
 //        }
-    }
+   // }
 
     // Applies gravity to the object (changes its vertical velocity)
     private fun applyGravity(obj: DynamicGameObject, deltaTime: Double) {

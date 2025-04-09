@@ -22,6 +22,7 @@ open class DynamicGameObject(startX: Int, startY: Int, img: String) : GameObject
     var isMoving = false
     var isOnGround = false
 
+
     var previousX = startX
     var previousY = startY
     var collisionCheckBounds = Rectangle()

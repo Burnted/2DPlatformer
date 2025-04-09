@@ -25,15 +25,15 @@ class GamePanel : JPanel(), KeyListener, Runnable {
 
     private var alpha = 1.0
 
-    private val player = Player(100, 200)
+    private val player = Player(220, 200)
     private val enemy = Enemy(400,100)
 
     //private val dynamicObjects = arrayListOf(player, enemy)
 
-    private val floor1 = WorldObject(1.0f , 220,300, "testFloor.png")
-    private val floor2 = WorldObject(0.5f, 400, 250, "testFloor.png")
+    private val floor1 = WorldObject(1.0f , 220,350, "testFloor.png")
+    //private val floor2 = WorldObject(0.5f, 400, 250, "testFloor.png")
 
-    private val collisionObjects = arrayListOf(floor1, floor2)
+    private val collisionObjects = arrayListOf(floor1)
 
     private val physicsEngine = PhysicsEngine(collisionObjects)
 
@@ -112,14 +112,22 @@ class GamePanel : JPanel(), KeyListener, Runnable {
         player.isMoving = true
 
         when(e.keyCode) {
+            KeyEvent.VK_SHIFT -> player.shifted = true
             KeyEvent.VK_UP -> player.jump()
             KeyEvent.VK_SPACE -> player.jump()
-            KeyEvent.VK_RIGHT -> player.horizontalVelocity = 300.0
-            KeyEvent.VK_LEFT -> player.horizontalVelocity = -300.0
+            KeyEvent.VK_RIGHT -> player.move(300.0)
+            KeyEvent.VK_LEFT -> player.move(-300.0)
         }
     }
 
     override fun keyReleased(e: KeyEvent?) {
+        if (e == null) {
+            return
+        }
+        when (e.keyCode) {
+            KeyEvent.VK_SHIFT -> player.shifted = false
+        }
+
         player.isMoving = false
     }
 
